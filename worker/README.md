@@ -1,4 +1,4 @@
-# MoodVault お問い合わせ Worker
+# Runback お問い合わせ Worker
 
 GitHub Pages のサポートページのフォーム送信を受け、Resend で開発者へメール転送する Cloudflare Worker。
 

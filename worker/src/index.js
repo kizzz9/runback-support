@@ -1,4 +1,4 @@
-// MoodVault お問い合わせフォーム受け口
+// Runback お問い合わせフォーム受け口
 // GitHub Pages (kizzz9.github.io) のフォーム → Turnstile 検証 → Resend でメール転送
 
 const ALLOWED_ORIGIN = "https://kizzz9.github.io";
@@ -76,7 +76,7 @@ export default {
     }
 
     const lines = [
-      "MoodVault サポートフォームからの問い合わせ",
+      "Runback サポートフォームからの問い合わせ",
       "",
       `お名前: ${name || "(未記入)"}`,
       `返信先: ${email || "(未記入)"}`,
@@ -91,9 +91,9 @@ export default {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "MoodVault Support <onboarding@resend.dev>",
+        from: "Runback Support <onboarding@resend.dev>",
         to: [env.CONTACT_TO],
-        subject: `[MoodVault] お問い合わせ${name ? ` - ${name}` : ""}`,
+        subject: `[Runback] お問い合わせ${name ? ` - ${name}` : ""}`,
         text: lines.join("\n"),
         ...(email ? { reply_to: email } : {}),
       }),
