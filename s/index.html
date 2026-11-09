@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0C0B0F">
+<meta name="robots" content="noindex">
+<title>Runback — 共有されたセット</title>
+<link rel="icon" href="../icon.png">
+<link rel="apple-touch-icon" href="../icon.png">
+<style>
+:root { --ink:#0C0B0F; --surface:#16151A; --line:rgba(255,255,255,.08); --label:#EFEBE4; --muted:#A6A1AE; --faint:#6E6977; --neon:#B07CFF; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html { color-scheme:dark; background:var(--ink); }
+body { font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Helvetica Neue",sans-serif; color:var(--label); min-height:100vh;
+  background: radial-gradient(900px 520px at 85% -10%, rgba(115,45,209,.32), transparent 60%), radial-gradient(800px 520px at -10% 10%, rgba(22,77,158,.28), transparent 60%), var(--ink);
+  -webkit-font-smoothing:antialiased; padding:40px 16px 56px; }
+main { max-width:480px; margin:0 auto; }
+.brand { display:flex; align-items:center; gap:10px; color:var(--muted); font-weight:600; font-size:14px; }
+.brand img { width:28px; height:28px; border-radius:7px; }
+h1 { font-size:28px; line-height:1.3; margin:28px 0 4px; word-break:break-word; }
+.count { color:var(--muted); font-size:14px; }
+ol { list-style:none; margin:22px 0 28px; border-top:1px solid var(--line); }
+li { display:flex; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+li .n { width:20px; text-align:right; color:var(--faint); font-size:13px; font-variant-numeric:tabular-nums; }
+li img, li .ph { width:44px; height:44px; border-radius:6px; background:rgba(255,255,255,.08); object-fit:cover; flex:none; }
+li .t { font-weight:600; font-size:15px; line-height:1.35; }
+li .a { color:var(--muted); font-size:12px; }
+.btn { display:block; text-align:center; padding:14px 18px; border-radius:14px; font-weight:700; text-decoration:none; font-size:16px; margin-top:12px; }
+.primary { background:var(--neon); color:#140b22; }
+.secondary { background:var(--surface); color:var(--label); border:1px solid var(--line); }
+.note { color:var(--faint); font-size:12px; line-height:1.7; margin-top:20px; }
+.error { color:var(--muted); margin-top:28px; line-height:1.8; }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><img src="../icon.png" alt=""><span>Runback</span></div>
+  <div id="set" hidden>
+    <h1 id="name"></h1>
+    <p class="count" id="count"></p>
+    <ol id="list"></ol>
+    <a class="btn primary" id="open" href="#">Runback で開く</a>
+    <a class="btn secondary" href="https://apps.apple.com/app/id6832275879">App Store で Runback を入手</a>
+    <p class="note" id="note">Runback が入っている iPhone なら、「Runback で開く」でこのセットを追加できます。曲の再生には Apple Music が必要です。</p>
+  </div>
+  <p class="error" id="error" hidden>このリンクからセットを読み取れませんでした。送ってくれた人に、もう一度共有してもらってください。</p>
+</main>
+<script>
+(function () {
+  var en = !/^ja/i.test(navigator.language || "");
+  if (en) {
+    document.documentElement.lang = "en";
+    document.title = "Runback — Shared set";
+    document.getElementById("open").textContent = "Open in Runback";
+    document.querySelector(".secondary").textContent = "Get Runback on the App Store";
+    document.getElementById("note").textContent = "On an iPhone with Runback, tap “Open in Runback” to add this set. Playing songs requires Apple Music.";
+    document.getElementById("error").textContent = "This link doesn’t contain a set Runback can read. Ask the sender to share it again.";
+  }
+  // セットの中身は # 以降にある。ページはそれを読むだけで、どこにも送らない。
+  var frag = location.hash.slice(1);
+  try {
+    var b64 = frag.replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
+    var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+    var data = JSON.parse(new TextDecoder().decode(bytes));
+    if (data.v !== 1 || !Array.isArray(data.k)) throw new Error("bad");
+    document.getElementById("name").textContent = (data.e ? data.e + " " : "") + data.n;
+    document.getElementById("count").textContent = en ? data.k.length + " songs" : data.k.length + "曲";
+    var list = document.getElementById("list");
+    data.k.forEach(function (row, i) {
+      var li = document.createElement("li");
+      var n = document.createElement("span"); n.className = "n"; n.textContent = i + 1; li.appendChild(n);
+      var art;
+      if (row[3] && /^https:\/\//.test(row[3])) { art = document.createElement("img"); art.src = row[3].replace("{w}", "120").replace("{h}", "120"); art.alt = ""; art.loading = "lazy"; }
+      else { art = document.createElement("span"); art.className = "ph"; }
+      li.appendChild(art);
+      var text = document.createElement("div");
+      var t = document.createElement("div"); t.className = "t"; t.textContent = row[1];
+      var a = document.createElement("div"); a.className = "a"; a.textContent = row[2];
+      text.appendChild(t); text.appendChild(a); li.appendChild(text);
+      list.appendChild(li);
+    });
+    document.getElementById("open").href = "moodvault://import#" + frag;
+    document.getElementById("set").hidden = false;
+  } catch (e) {
+    document.getElementById("error").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>
